@@ -5,9 +5,11 @@ import { useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import Spinner from '../components/layout/Spinner';
 import GithubContext from '../context/github/GithubContext';
+import RepoList from '../components/repos/RepoList';
+import { getUserAndRepos } from '../context/github/GithubActions';
 
 const User = ({ match }) => {
-	const { getSingleUser, user, loading } = useContext(GithubContext);
+	const { user, loading, repos, dispatch } = useContext(GithubContext);
 
 	const {
 		name,
@@ -29,8 +31,13 @@ const User = ({ match }) => {
 	const params = useParams();
 
 	useEffect(() => {
-		getSingleUser(params.name);
-	}, []);
+		dispatch({ type: 'SET_LOADING' });
+		const getUserData = async () => {
+			const userData = await getUserAndRepos(params.name);
+			dispatch({ type: 'GET_USER_AND_REPOS', payload: userData });
+		};
+		getUserData();
+	}, [dispatch, params.name]);
 
 	if (loading) {
 		return <Spinner />;
@@ -164,6 +171,7 @@ const User = ({ match }) => {
 						</div>
 					</div>
 				</div>
+				<RepoList repos={repos} />
 			</div>
 		</>
 	);
